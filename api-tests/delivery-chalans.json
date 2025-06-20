@@ -1,0 +1,19 @@
+POST /api/delivery-chalans
+{
+  "invoiceId": 1,
+  "clientId": 1,
+  "chalanDate": "2024-01-16",
+  "docNo": "DC-2024-001",
+  "notes": "Goods delivered to client office reception"
+}
+
+GET /api/delivery-chalans
+GET /api/delivery-chalans/1
+GET /api/delivery-chalans/client/1
+GET /api/delivery-chalans/invoice/1
+PUT /api/delivery-chalans/1
+{
+  "notes": "Goods delivered successfully - signed by security"
+}
+
+DELETE /api/delivery-chalans/1

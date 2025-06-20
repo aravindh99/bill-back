@@ -1,0 +1,24 @@
+{
+  "name": "MacBook Pro 16-inch",
+  "description": "Apple MacBook Pro with M2 chip", 
+  "sku": "MBP-16-M2-2024",
+  "type": "product",
+  "unit": "pcs",
+  "openingQuantity": 10,
+  "tax": 18.0,
+  "code": "84713000",
+  "salesUnitPrice": 250000.00,
+  "salesCurrency": "INR", 
+  "salesCessPercentage": 0,
+  "salesCess": 0,
+  "purchaseUnitPrice": 200000.00,
+  "purchaseCurrency": "INR",
+  "purchaseCessPercentage": 0,
+  "purchaseCess": 0
+}
+
+PUT /api/items/id
+{
+  "salesUnitPrice": 260000.00,
+  "purchaseUnitPrice": 210000.00
+}

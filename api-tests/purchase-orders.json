@@ -1,0 +1,22 @@
+{
+  "vendorId": 1,
+  "poNo": "PO-VEN-2024-001",
+  "orderDate": "2024-01-12",
+  "validUntil": "2024-02-12",
+  "subtotal": 200000.00,
+  "total": 236000.00
+}
+
+GET /api/purchase-orders
+
+GET /api/purchase-orders/1
+
+GET /api/purchase-orders/vendor/1
+
+PUT /api/purchase-orders/1
+{
+  "validUntil": "2024-03-12",
+  "total": 250000.00
+}
+
+DELETE /api/purchase-orders/1

@@ -1,0 +1,23 @@
+POST /api/payments
+{
+  "date": "2024-01-25",
+  "number": "PAY-2024-001",
+  "type": "Customer Payment",
+  "accountName": "HDFC Bank Current Account",
+  "documentMethod": "Bank Transfer",
+  "amount": 295500.00,
+  "availableCredit": 295500.00
+}
+
+GET /api/payments
+GET /api/payments/total
+GET /api/payments/date-range?startDate=2024-01-01&endDate=2024-01-31
+GET /api/payments/1
+GET /api/payments/client/1
+PUT /api/payments/1
+{
+  "amount": 300000.00,
+  "availableCredit": 300000.00
+}
+
+DELETE /api/payments/1

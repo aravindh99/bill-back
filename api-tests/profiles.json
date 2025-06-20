@@ -1,0 +1,28 @@
+POST /api/profiles
+{
+  "logo": "https://company.com/logo.png",
+  "companyName": "Your Company Pvt Ltd",
+  "country": "India",
+  "city": "Chennai",
+  "pinCode": "600001",
+  "defaultCurrency": "INR",
+  "state": "Tamil Nadu",
+  "address": "123, Business Center, T.Nagar",
+  "email": "info@yourcompany.com",
+  "phone": "9876543210",
+  "serviceTaxNo": "AAAAA0000A001",
+  "website": "https://yourcompany.com",
+  "taxationType": "GST",
+  "contactName": "John Doe"
+}
+
+GET /api/profiles
+GET /api/profiles/current
+GET /api/profiles/1
+PUT /api/profiles/1
+{
+  "companyName": "Your Company Private Limited",
+  "city": "Bangalore",
+  "phone": "9876543211"
+}
+DELETE /api/profiles/1

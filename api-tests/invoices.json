@@ -1,0 +1,39 @@
+{
+  "clientId": 1,
+  "invoiceNo": "INV-2024-001",
+  "poNo": "PO-2024-100",
+  "invoiceDate": "2024-01-15",
+  "poDate": "2024-01-10",
+  "dueDate": "2024-02-15",
+  "paymentTerms": "Net 30 days",
+  "shippingCharges": 500.00,
+  "subtotal": 250000.00,
+  "tax": 45000.00,
+  "amount": 295500.00,
+  "balance": 295500.00,
+  "drCr": "DR",
+  "termsConditions": "Payment due within 30 days of invoice date",
+  "items": [
+    {
+      "itemId": 1,
+      "unit": "pcs",
+      "quantity": 1,
+      "price": 250000.00,
+      "discountPercent": 0,
+      "total": 250000.00,
+      "description": "MacBook Pro 16-inch with warranty"
+    }
+  ]
+}
+
+GET /api/invoices
+
+GET /api/invoices/1
+
+{
+  "paymentTerms": "Net 45 days",
+  "balance": 200000.00,
+  "paymentDate": "2024-01-20"
+}
+
+DELETE /api/invoices/1

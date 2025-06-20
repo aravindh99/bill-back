@@ -1,0 +1,9 @@
+POST /api/client-contacts
+{
+  "clientId": 1,
+  "name": "Priya Sharma",
+  "phone": "9988776655",
+  "email": "priya.sharma@techsolutions.com"
+}
+GET /api/client-contacts
+DELETE /api/client-contacts/1

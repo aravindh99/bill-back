@@ -1,0 +1,21 @@
+POST /api/credit-notes
+{
+  "invoiceId": 1,
+  "clientId": 1,
+  "issueDate": "2024-01-20",
+  "docNo": "CN-2024-001",
+  "amount": 25000.00,
+  "description": "Discount for early payment"
+}
+
+GET /api/credit-notes
+GET /api/credit-notes/total
+GET /api/credit-notes/1
+GET /api/credit-notes/client/1
+GET /api/credit-notes/invoice/1
+PUT /api/credit-notes/1
+{
+  "amount": 30000.00,
+  "description": "Increased discount for early payment"
+}
+DELETE /api/credit-notes/1

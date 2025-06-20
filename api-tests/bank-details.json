@@ -1,0 +1,20 @@
+POST /api/bank-details
+{
+  "profileId": 1,
+  "bankName": "State Bank of India",
+  "branchName": "Anna Nagar Branch",
+  "adCode": "005678",
+  "upiId": "company@sbi",
+  "accountNumber": "98765432109876",
+  "ifscCode": "SBIN0005678",
+  "swiftCode": "SBININBB",
+  "accountHolderName": "Your Company Pvt Ltd"
+}
+GET /api/bank-details
+GET /api/bank-details/1
+PUT /api/bank-details/1
+{
+  "branchName": "Anna Nagar Main Branch",
+  "upiId": "company@sbiyono"
+}
+DELETE /api/bank-details/1

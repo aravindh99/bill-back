@@ -1,0 +1,25 @@
+{
+  "companyName": "Apple Authorized Distributor",
+  "contactName": "Rajesh Kumar",
+  "phone": "9123456780",
+  "email": "rajesh@appledist.com",
+  "gstTreatment": "Registered Business – Regular",
+  "gstin": "29AAAAA0000A1Z5",
+  "pan": "BBBBB1111B",
+  "website": "https://appledist.com",
+  "billingAddress": "456, Distribution Center, Whitefield",
+  "shippingAddress": "456, Distribution Center, Whitefield",
+  "city": "Bangalore",
+  "isClient": false
+}
+
+GET /api/vendors
+
+GET /api/vendors/1
+
+{
+  "contactName": "Rajesh Kumar Sharma",
+  "phone": "9123456781"
+}
+
+DELETE /api/vendors/1

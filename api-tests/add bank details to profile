@@ -1,0 +1,19 @@
+POST /api/profiles/1/bank-details
+{
+  "bankName": "HDFC Bank",
+  "branchName": "T.Nagar Branch",
+  "adCode": "001234",
+  "upiId": "company@hdfcbank",
+  "accountNumber": "12345678901234",
+  "ifscCode": "HDFC0001234",
+  "swiftCode": "HDFCINBB",
+  "accountHolderName": "Your Company Pvt Ltd"
+}
+
+PUT /api/profiles/bank-details/1
+{
+  "upiId": "newcompany@hdfcbank",
+  "accountHolderName": "Your Company Private Limited"
+}
+
+DELETE /api/profiles/bank-details/1

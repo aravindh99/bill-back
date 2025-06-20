@@ -1,0 +1,21 @@
+POST /api/debit-notes
+{
+  "invoiceId": 1,
+  "clientId": 1,
+  "issueDate": "2024-01-22",
+  "docNo": "DN-2024-001",
+  "amount": 5000.00,
+  "description": "Late payment charges"
+}
+
+GET /api/debit-notes
+GET /api/debit-notes/total
+GET /api/debit-notes/1
+GET /api/debit-notes/client/1
+GET /api/debit-notes/invoice/1
+PUT /api/debit-notes/1
+{
+  "amount": 7500.00,
+  "description": "Updated late payment charges"
+}
+DELETE /api/debit-notes/1

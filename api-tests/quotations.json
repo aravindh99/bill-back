@@ -1,0 +1,31 @@
+{
+  "clientId": 1,
+  "quotationNo": "QT-2024-001",
+  "poNumber": "CLIENT-PO-500",
+  "quotationDate": "2024-01-10",
+  "validUntil": "2024-02-10",
+  "subtotal": 250000.00,
+  "total": 295000.00,
+  "items": [
+    {
+      "itemId": 1,
+      "unit": "pcs",
+      "quantity": 1,
+      "price": 250000.00,
+      "discountPercent": 0,
+      "total": 250000.00,
+      "description": "MacBook Pro with extended warranty"
+    }
+  ]
+}
+
+GET /api/quotations
+
+GET /api/quotations/1
+
+{
+  "validUntil": "2024-03-10",
+  "total": 280000.00
+}
+
+DELETE /api/quotations/1

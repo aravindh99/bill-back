@@ -1,0 +1,26 @@
+{
+  "companyName": "Tech Solutions Pvt Ltd",
+  "phone": "9876543210",
+  "email": "contact@techsolutions.com",
+  "gstTreatment": "Registered Business – Regular",
+  "gstin": "33AAAAA0000A1Z5",
+  "pan": "AAAAA0000A",
+  "tin": "27451234567",
+  "vat": "27451234567",
+  "website": "https://techsolutions.com",
+  "billingAddress": "123, Tech Park, Electronic City",
+  "city": "Bangalore",
+  "openingBalance": 50000.00,
+  "isVendor": false
+}
+
+update /id
+{
+  "companyName": "Tech Solutions Pvt Ltd - Updated",
+  "phone": "9876543211",
+  "email": "contact@techsolutions.com",
+  "city": "Chennai",
+  "openingBalance": 75000.00
+}
+
+DELETE /api/clients/id

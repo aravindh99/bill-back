@@ -1,0 +1,339 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(STAFF)
+  createdAt DateTime @default(now())
+}
+
+enum Role {
+  ADMIN
+  STAFF
+}
+
+model Client {
+  id              Int             @id @default(autoincrement())
+  companyName     String
+  contactName     String?
+  phone           String
+  email           String          @unique
+  gstTreatment    String?
+  gstin           String?
+  pan             String?
+  tin             String?
+  vat             String?
+  website         String?
+  billingAddress  String?
+  city            String?
+  openingBalance  Decimal         @default(0.00)
+  isVendor        Boolean         @default(false)
+
+  contacts        ClientContact[]
+  invoices        Invoice[]
+  quotations      Quotation[]        
+  proformaInvoices ProformaInvoice[] 
+   deliveryChalans  DeliveryChalan[]
+  creditNotes      CreditNote[]
+  debitNotes       DebitNote[]
+  paymentDetails   PaymentDetail[]
+} 
+
+model ClientContact {
+  id        Int    @id @default(autoincrement())
+  clientId  Int
+  name      String
+  phone     String
+  email     String
+
+  client    Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+}
+
+model Vendor {
+  id              Int     @id @default(autoincrement())
+  companyName     String
+  contactName     String
+  phone           String
+  email           String  @unique
+  gstTreatment    String?
+  gstin           String?
+  pan             String?
+  tin             String?
+  vat             String?
+  website         String?
+  billingAddress  String?
+  shippingAddress String?
+  city            String?
+  isClient        Boolean @default(false)
+
+  contacts        VendorContact[]
+    purchaseOrders   PurchaseOrder[]
+}
+
+model VendorContact {
+  id        Int    @id @default(autoincrement())
+  vendorId  Int
+  name      String
+  phone     String
+  email     String
+
+  vendor    Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+}
+
+model Item {
+  id                     Int      @id @default(autoincrement())
+  name                   String
+  description            String?
+  sku                    String   @unique
+  type                   ItemType
+  unit                   String
+  openingQuantity        Decimal?
+  tax                    Decimal?
+  code                   String?  // HSN or SAC
+  salesUnitPrice         Decimal
+  salesCurrency          String   @default("INR")
+  salesCessPercentage    Decimal?
+  salesCess              Decimal?
+  purchaseUnitPrice      Decimal
+  purchaseCurrency       String   @default("INR")
+  purchaseCessPercentage Decimal?
+  purchaseCess           Decimal?
+
+  invoiceItems           InvoiceItem[]
+  quotationItems         QuotationItem[]
+  proformaItems          ProformaItem[]
+}
+
+enum ItemType {
+  product
+  service
+}
+
+model Invoice {
+  id               Int       @id @default(autoincrement())
+  clientId         Int
+  invoiceNo        String    @unique
+  poNo             String?
+  invoiceDate      DateTime
+  poDate           DateTime?
+  dueDate          DateTime
+  paymentTerms     String
+  shippingCharges  Decimal   @default(0.00)
+  subtotal         Decimal
+  tax              Decimal?
+  amount           Decimal
+  balance          Decimal   @default(0.00)
+  drCr             DrCr
+  termsConditions  String?
+  paymentDate      DateTime?
+
+  client           Client    @relation(fields: [clientId], references: [id])
+  invoiceItems     InvoiceItem[]
+    deliveryChalans  DeliveryChalan[]
+  creditNotes      CreditNote[]
+  debitNotes       DebitNote[]
+
+}
+
+enum DrCr {
+  DR
+  CR
+}
+
+model InvoiceItem {
+  id              Int      @id @default(autoincrement())
+  invoiceId       Int
+  itemId          Int
+  unit            String
+  quantity        Decimal
+  price           Decimal
+  discountPercent Decimal?
+  total           Decimal
+  description     String?
+
+  invoice         Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  item            Item     @relation(fields: [itemId], references: [id])
+}
+
+model Quotation {
+  id           Int             @id @default(autoincrement())
+  clientId     Int
+  quotationNo  String          @unique
+  poNumber     String?
+  quotationDate DateTime
+  validUntil   DateTime
+  subtotal     Decimal
+  total        Decimal
+
+  client       Client          @relation(fields: [clientId], references: [id])
+  items        QuotationItem[]
+}
+
+model QuotationItem {
+  id              Int       @id @default(autoincrement())
+  quotationId     Int
+  itemId          Int
+  unit            String
+  quantity        Decimal
+  price           Decimal
+  discountPercent Decimal?
+  total           Decimal
+  description     String?
+
+  quotation       Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  item            Item      @relation(fields: [itemId], references: [id])
+}
+
+
+model ProformaInvoice {
+  id           Int             @id @default(autoincrement())
+  clientId     Int
+  proformaNo   String          @unique
+  poNumber     String?
+  proformaDate DateTime
+  validUntil   DateTime
+
+  client       Client          @relation(fields: [clientId], references: [id])
+  items        ProformaItem[]
+}
+
+model ProformaItem {
+  id              Int             @id @default(autoincrement())
+  proformaId      Int
+  itemId          Int?
+  unit            String
+  quantity        Decimal
+  price           Decimal
+  discountPercent Decimal?
+  total           Decimal
+  description     String?
+
+  proforma        ProformaInvoice @relation(fields: [proformaId], references: [id], onDelete: Cascade)
+  item            Item?           @relation(fields: [itemId], references: [id])
+}
+
+model DeliveryChalan {
+  id         Int      @id @default(autoincrement())
+  invoiceId  Int?
+  clientId   Int
+  chalanDate DateTime
+  docNo      String   @unique
+  notes      String?
+
+  client     Client   @relation(fields: [clientId], references: [id])
+  invoice    Invoice? @relation(fields: [invoiceId], references: [id])
+}
+
+model CreditNote {
+  id         Int      @id @default(autoincrement())
+  invoiceId  Int?
+  clientId   Int
+  issueDate  DateTime
+  docNo      String   @unique
+  amount     Decimal
+  description String?
+
+  client     Client   @relation(fields: [clientId], references: [id])
+  invoice    Invoice? @relation(fields: [invoiceId], references: [id])
+}
+
+model DebitNote {
+  id          Int      @id @default(autoincrement())
+  invoiceId   Int?
+  clientId    Int
+  issueDate   DateTime
+  docNo       String   @unique
+  amount      Decimal
+  description String?
+
+  client      Client   @relation(fields: [clientId], references: [id])
+  invoice     Invoice? @relation(fields: [invoiceId], references: [id])
+}
+
+model PurchaseOrder {
+  id         Int      @id @default(autoincrement())
+  vendorId   Int
+  poNo       String   @unique
+  orderDate  DateTime
+  validUntil DateTime
+  subtotal   Decimal
+  total      Decimal
+
+  vendor     Vendor   @relation(fields: [vendorId], references: [id])
+}
+
+model Payment {
+  id               Int             @id @default(autoincrement())
+  date             DateTime
+  number           String          @unique
+  type             String
+  accountName      String
+  documentMethod   String?
+  amount           Decimal
+  availableCredit  Decimal         @default(0.00)
+
+ 
+  paymentDetails   PaymentDetail[]
+
+}
+
+model PaymentDetail {
+  id         Int      @id @default(autoincrement())
+  paymentId  Int
+  clientId   Int
+  number     String
+  date       DateTime
+  amount     Decimal
+  method     String
+  bankCharges Decimal?
+  reference  String?
+
+  payment    Payment  @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  client     Client   @relation(fields: [clientId], references: [id])
+}
+
+model Profile {
+  id              Int           @id @default(autoincrement())
+  logo            String?
+  companyName     String
+  country         String
+  city            String
+  pinCode         String?
+  defaultCurrency String        @default("INR")
+  state           String?
+  address         String
+  email           String        @unique
+  phone           String
+  serviceTaxNo    String?
+  website         String?
+  taxationType    String?
+  contactName     String?
+
+  bankDetails     BankDetail[]
+}
+
+model BankDetail {
+  id                 Int      @id @default(autoincrement())
+  profileId          Int
+  bankName           String
+  branchName         String?
+  adCode             String?
+  upiId              String?
+  accountNumber      String
+  ifscCode           String
+  swiftCode          String?
+  accountHolderName  String
+
+  profile            Profile  @relation(fields: [profileId], references: [id])
+}

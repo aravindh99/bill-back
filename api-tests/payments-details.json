@@ -1,0 +1,13 @@
+POST /api/payment-details
+{
+  "paymentId": 1,
+  "clientId": 1,
+  "number": "PAY-DTL-001",
+  "date": "2024-01-25",
+  "amount": 295500.00,
+  "method": "Bank Transfer",
+  "bankCharges": 25.00,
+  "reference": "TXN123456789"
+}
+
+GET /api/payment-details
