@@ -1,23 +1,41 @@
 import prisma from '../config/prismaClient.js';
+import { getFinancialYearCode, generateDocumentNumber } from '../utils/helpers.js';
 
 export const createCreditNote = async (req, res) => {
   const {
     invoiceId,
     clientId,
     issueDate,
-    docNo,
     amount,
     description
   } = req.body;
 
-  if (!clientId || !issueDate || !docNo || !amount) {
-    return res.status(400).json({ message: 'Client ID, issue date, document number, and amount are required.' });
+  if (!clientId || !issueDate || !amount) {
+    return res.status(400).json({ message: 'Client ID, issue date, and amount are required.' });
   }
 
   try {
+    const profile = await prisma.profile.findFirst();
+    if (!profile || !profile.companyCode) {
+      return res.status(400).json({ message: 'Company code not set in profile. Please set it in company profile settings.' });
+    }
+    const companyCode = profile.companyCode;
+    const yearCode = getFinancialYearCode(new Date(issueDate));
+    const typeCode = 'CN';
+    
+    const count = await prisma.creditNote.count({
+      where: {
+        docNo: {
+          startsWith: `${companyCode}-${yearCode}-${typeCode}-`
+        }
+      }
+    });
+    const sequence = count + 1;
+    const docNo = generateDocumentNumber(companyCode, yearCode, typeCode, sequence);
+
     const existingCreditNote = await prisma.creditNote.findUnique({ where: { docNo } });
     if (existingCreditNote) {
-      return res.status(409).json({ message: 'Credit Note document number already exists' });
+      return res.status(409).json({ message: 'Generated Credit Note document number already exists, please try again.' });
     }
 
     const creditNote = await prisma.creditNote.create({
@@ -122,7 +140,6 @@ export const updateCreditNote = async (req, res) => {
   const {
     invoiceId,
     issueDate,
-    docNo,
     amount,
     description
   } = req.body;
@@ -133,7 +150,6 @@ export const updateCreditNote = async (req, res) => {
       data: {
         invoiceId: invoiceId || null,
         issueDate: new Date(issueDate),
-        docNo,
         amount: parseFloat(amount),
         description
       },

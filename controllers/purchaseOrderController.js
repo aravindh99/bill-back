@@ -1,9 +1,9 @@
 import prisma from '../config/prismaClient.js';
+import { getFinancialYearCode, generateDocumentNumber } from '../utils/helpers.js';
 
 export const createPurchaseOrder = async (req, res) => {
   const {
     vendorId,
-    poNo,
     orderDate,
     validUntil,
     subtotal,
@@ -11,15 +11,29 @@ export const createPurchaseOrder = async (req, res) => {
     items // array of purchase order items
   } = req.body;
 
-  if (!vendorId || !poNo || !orderDate || !validUntil || !subtotal || !total) {
+  if (!vendorId || !orderDate || !validUntil || !subtotal || !total) {
     return res.status(400).json({ message: 'Missing required fields' });
   }
 
   try {
-    const existingPO = await prisma.purchaseOrder.findUnique({ where: { poNo } });
-    if (existingPO) {
-      return res.status(409).json({ message: 'Purchase Order number already exists' });
+    // Get company code from profile
+    const profile = await prisma.profile.findFirst();
+    if (!profile || !profile.companyCode) {
+      return res.status(400).json({ message: 'Company code not set in profile. Please set it in company profile settings.' });
     }
+    const companyCode = profile.companyCode;
+    const yearCode = getFinancialYearCode(new Date(orderDate));
+    const typeCode = 'PO';
+    // Find the next sequence for this year/type/company
+    const count = await prisma.purchaseOrder.count({
+      where: {
+        poNo: {
+          startsWith: `${companyCode}-${yearCode}-${typeCode}-`
+        }
+      }
+    });
+    const sequence = count + 1;
+    const poNo = generateDocumentNumber(companyCode, yearCode, typeCode, sequence);
 
     const purchaseOrder = await prisma.purchaseOrder.create({
       data: {

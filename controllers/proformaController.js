@@ -1,23 +1,82 @@
 import prisma from '../config/prismaClient.js';
+import { getFinancialYearCode, generateDocumentNumber } from '../utils/helpers.js';
 
 export const createProformaInvoice = async (req, res) => {
   const {
     clientId,
-    proformaNo,
     poNumber,
     proformaDate,
     validUntil,
-    items // array of { itemId, unit, quantity, price, discountPercent, total, description }
+    items, // array of { itemId, unit, quantity, price, discountPercent, total, description }
+    quotationId, // NEW: reference to Quotation
+    status // NEW: Optional status field
   } = req.body;
 
-  if (!clientId || !proformaNo || !proformaDate || !validUntil || !items || items.length === 0) {
-    return res.status(400).json({ message: 'Missing required fields or empty item list' });
+  if (!clientId || !proformaDate || !validUntil) {
+    return res.status(400).json({ message: 'Missing required fields' });
   }
 
   try {
-    const existingProforma = await prisma.proformaInvoice.findUnique({ where: { proformaNo } });
-    if (existingProforma) {
-      return res.status(409).json({ message: 'Proforma Invoice number already exists' });
+    // Get company code from profile
+    const profile = await prisma.profile.findFirst();
+    if (!profile || !profile.companyCode) {
+      return res.status(400).json({ message: 'Company code not set in profile. Please set it in company profile settings.' });
+    }
+    const companyCode = profile.companyCode;
+    const yearCode = getFinancialYearCode(new Date(proformaDate));
+    const typeCode = 'PIV';
+    // Find the next sequence for this year/type/company
+    const count = await prisma.proformaInvoice.count({
+      where: {
+        proformaNo: {
+          startsWith: `${companyCode}-${yearCode}-${typeCode}-`
+        }
+      }
+    });
+    const sequence = count + 1;
+    const proformaNo = generateDocumentNumber(companyCode, yearCode, typeCode, sequence);
+
+    let itemsToCreate = items;
+    // If quotationId is provided and items is empty, auto-fill from quotation
+    if (!items || items.length === 0) {
+      let sourceQuotationId = quotationId; // Use provided quotationId if available
+
+      if (!sourceQuotationId && clientId) {
+        // If no specific quotationId, find the latest OPEN quotation for the client
+        const latestOpenQuotation = await prisma.quotation.findFirst({
+          where: {
+            clientId: parseInt(clientId),
+            status: 'OPEN', // Only consider open quotations
+          },
+          orderBy: { quotationDate: 'desc' },
+        });
+        if (latestOpenQuotation) {
+          sourceQuotationId = latestOpenQuotation.id;
+        }
+      }
+
+      if (sourceQuotationId) {
+        const quotation = await prisma.quotation.findUnique({
+          where: { id: sourceQuotationId },
+          include: { items: true },
+        });
+        if (!quotation) {
+          return res.status(404).json({ message: 'Quotation not found for auto-fill' });
+        }
+        itemsToCreate = quotation.items.map((item) => ({
+          itemId: item.itemId,
+          unit: item.unit,
+          quantity: item.quantity,
+          price: item.price,
+          discountPercent: item.discountPercent || 0,
+          total: item.total,
+          description: item.description || '',
+        }));
+      }
+    }
+
+    if (!itemsToCreate || itemsToCreate.length === 0) {
+      return res.status(400).json({ message: 'No items to create in proforma invoice' });
     }
 
     const proformaInvoice = await prisma.proformaInvoice.create({
@@ -27,8 +86,10 @@ export const createProformaInvoice = async (req, res) => {
         poNumber,
         proformaDate: new Date(proformaDate),
         validUntil: new Date(validUntil),
+        quotationId: quotationId || null,
+        status: status || 'DRAFT', // Set status, default to DRAFT
         items: {
-          create: items.map((item) => ({
+          create: itemsToCreate.map((item) => ({
             itemId: item.itemId ? parseInt(item.itemId) : null,
             unit: item.unit,
             quantity: parseFloat(item.quantity),
@@ -106,7 +167,8 @@ export const updateProformaInvoice = async (req, res) => {
     poNumber,
     proformaDate,
     validUntil,
-    items
+    items,
+    status // NEW: Optional status field
   } = req.body;
 
   try {
@@ -124,6 +186,7 @@ export const updateProformaInvoice = async (req, res) => {
         poNumber,
         proformaDate: new Date(proformaDate),
         validUntil: new Date(validUntil),
+        status, // Update status if provided
         items: {
           create: items.map((item) => ({
             itemId: item.itemId ? parseInt(item.itemId) : null,
@@ -203,6 +266,29 @@ export const getProformaInvoicesByClient = async (req, res) => {
     res.status(200).json(proformaInvoices);
   } catch (error) {
     console.error('Get proforma invoices by client error:', error);
+    res.status(500).json({ message: 'Failed to fetch proforma invoices' });
+  }
+};
+
+export const getProformaInvoicesByQuotation = async (req, res) => {
+  const quotationId = parseInt(req.params.quotationId);
+  try {
+    const proformas = await prisma.proformaInvoice.findMany({
+      where: { quotationId },
+      orderBy: { proformaDate: 'desc' },
+      include: {
+        client: {
+          select: {
+            companyName: true,
+            email: true
+          }
+        },
+        items: true
+      }
+    });
+    res.status(200).json(proformas);
+  } catch (error) {
+    console.error('Get proforma invoices by quotation error:', error);
     res.status(500).json({ message: 'Failed to fetch proforma invoices' });
   }
 }; 

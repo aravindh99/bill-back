@@ -16,6 +16,7 @@ export const createProfile = async (req, res) => {
     website,
     taxationType,
     contactName,
+    companyCode,
     bankDetails // array of bank details
   } = req.body;
 
@@ -45,6 +46,7 @@ export const createProfile = async (req, res) => {
         website,
         taxationType,
         contactName,
+        companyCode,
         bankDetails: bankDetails ? {
           create: bankDetails.map((bank) => ({
             bankName: bank.bankName,
@@ -122,7 +124,8 @@ export const updateProfile = async (req, res) => {
     serviceTaxNo,
     website,
     taxationType,
-    contactName
+    contactName,
+    companyCode
   } = req.body;
 
   if (!companyName || !country || !city || !address || !email || !phone) {
@@ -158,7 +161,8 @@ export const updateProfile = async (req, res) => {
         serviceTaxNo,
         website,
         taxationType,
-        contactName
+        contactName,
+        companyCode
       },
       include: {
         bankDetails: true

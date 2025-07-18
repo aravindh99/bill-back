@@ -121,29 +121,34 @@ enum ItemType {
 }
 
 model Invoice {
-  id               Int       @id @default(autoincrement())
-  clientId         Int
-  invoiceNo        String    @unique
-  poNo             String?
-  invoiceDate      DateTime
-  poDate           DateTime?
-  dueDate          DateTime
-  paymentTerms     String
-  shippingCharges  Decimal   @default(0.00)
-  subtotal         Decimal
-  tax              Decimal?
-  amount           Decimal
-  balance          Decimal   @default(0.00)
-  drCr             DrCr
-  termsConditions  String?
-  paymentDate      DateTime?
+  id                Int        @id @default(autoincrement())
+  clientId          Int
+  proformaInvoiceId Int?       // Reference to ProformaInvoice
+  quotationId       Int?       // Reference to Quotation
+  invoiceNo         String     @unique
+  poNo              String?
+  invoiceDate       DateTime
+  poDate            DateTime?
+  dueDate           DateTime
+  paymentTerms      String
+  shippingCharges   Decimal    @default(0.00)
+  subtotal          Decimal
+  tax               Decimal?
+  amount            Decimal
+  balance           Decimal    @default(0.00)
+  drCr              DrCr
+  termsConditions   String?
+  paymentDate       DateTime?
+  status            InvoiceStatus @default(DRAFT)
 
-  client           Client    @relation(fields: [clientId], references: [id])
-  invoiceItems     InvoiceItem[]
-    deliveryChalans  DeliveryChalan[]
-  creditNotes      CreditNote[]
-  debitNotes       DebitNote[]
-
+  client            Client     @relation(fields: [clientId], references: [id])
+  proformaInvoice   ProformaInvoice? @relation("ProformaToInvoice", fields: [proformaInvoiceId], references: [id])
+  quotation         Quotation? @relation("QuotationToInvoice", fields: [quotationId], references: [id])
+  invoiceItems      InvoiceItem[]
+  deliveryChalans   DeliveryChalan[]
+  creditNotes       CreditNote[]
+  debitNotes        DebitNote[]
+  payments          Payment[]
 }
 
 enum DrCr {
@@ -167,17 +172,21 @@ model InvoiceItem {
 }
 
 model Quotation {
-  id           Int             @id @default(autoincrement())
-  clientId     Int
-  quotationNo  String          @unique
-  poNumber     String?
-  quotationDate DateTime
-  validUntil   DateTime
-  subtotal     Decimal
-  total        Decimal
+  id               Int                @id @default(autoincrement())
+  clientId         Int
+  quotationNo      String             @unique
+  poNumber         String?
+  quotationDate    DateTime
+  validUntil       DateTime
+  subtotal         Decimal
+  total            Decimal
+  status           QuotationStatus    @default(OPEN)
+  
+  client           Client             @relation(fields: [clientId], references: [id])
+  items            QuotationItem[]
 
-  client       Client          @relation(fields: [clientId], references: [id])
-  items        QuotationItem[]
+  proformaInvoices ProformaInvoice[] @relation("QuotationToProforma")
+  invoices         Invoice[]         @relation("QuotationToInvoice")
 }
 
 model QuotationItem {
@@ -197,15 +206,19 @@ model QuotationItem {
 
 
 model ProformaInvoice {
-  id           Int             @id @default(autoincrement())
+  id           Int                @id @default(autoincrement())
   clientId     Int
-  proformaNo   String          @unique
+  quotationId  Int?               // Reference to Quotation
+  proformaNo   String             @unique
   poNumber     String?
   proformaDate DateTime
   validUntil   DateTime
+  status       ProformaInvoiceStatus @default(DRAFT)
 
-  client       Client          @relation(fields: [clientId], references: [id])
+  client       Client             @relation(fields: [clientId], references: [id])
+  quotation    Quotation?         @relation("QuotationToProforma", fields: [quotationId], references: [id])
   items        ProformaItem[]
+  invoices     Invoice[]          @relation("ProformaToInvoice")
 }
 
 model ProformaItem {
@@ -274,18 +287,18 @@ model PurchaseOrder {
 }
 
 model Payment {
-  id               Int             @id @default(autoincrement())
-  date             DateTime
-  number           String          @unique
-  type             String
-  accountName      String
-  documentMethod   String?
-  amount           Decimal
-  availableCredit  Decimal         @default(0.00)
+  id              Int      @id @default(autoincrement())
+  invoiceId       Int?     // Link to Invoice (Optional, for now, can be null for generic payments)
+  date            DateTime
+  number          String   @unique
+  type            String
+  accountName     String
+  documentMethod  String?
+  amount          Decimal
+  availableCredit Decimal?
+  paymentDetails  PaymentDetail[]
 
- 
-  paymentDetails   PaymentDetail[]
-
+  invoice         Invoice? @relation(fields: [invoiceId], references: [id])
 }
 
 model PaymentDetail {
@@ -304,23 +317,23 @@ model PaymentDetail {
 }
 
 model Profile {
-  id              Int           @id @default(autoincrement())
-  logo            String?
-  companyName     String
-  country         String
-  city            String
-  pinCode         String?
-  defaultCurrency String        @default("INR")
-  state           String?
-  address         String
-  email           String        @unique
-  phone           String
-  serviceTaxNo    String?
-  website         String?
-  taxationType    String?
-  contactName     String?
-
-  bankDetails     BankDetail[]
+  id                Int      @id @default(autoincrement())
+  logo              String?
+  companyName       String
+  country           String
+  city              String
+  pinCode           String?
+  defaultCurrency   String
+  state             String?
+  address           String
+  email             String
+  phone             String
+  serviceTaxNo      String?
+  website           String?
+  taxationType      String?
+  contactName       String?
+  companyCode       String?
+  bankDetails       BankDetail[]
 }
 
 model BankDetail {
@@ -336,4 +349,31 @@ model BankDetail {
   accountHolderName  String
 
   profile            Profile  @relation(fields: [profileId], references: [id])
+}
+
+enum QuotationStatus {
+  OPEN
+  ACCEPTED
+  REJECTED
+  EXPIRED
+  DRAFT
+  CANCELLED
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PAID
+  PARTIALLY_PAID
+  OVERDUE
+  CANCELLED
+}
+
+enum ProformaInvoiceStatus {
+  DRAFT
+  SENT
+  ACCEPTED
+  REJECTED
+  EXPIRED
+  CANCELLED
 }

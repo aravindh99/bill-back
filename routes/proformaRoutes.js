@@ -5,7 +5,8 @@ import {
   getProformaInvoiceById, 
   updateProformaInvoice,
   deleteProformaInvoice,
-  getProformaInvoicesByClient
+  getProformaInvoicesByClient,
+  getProformaInvoicesByQuotation
 } from '../controllers/proformaController.js';
 import { protect } from '../middleware/authMiddleware.js';
 
@@ -17,5 +18,6 @@ router.get('/:id', protect, getProformaInvoiceById);
 router.put('/:id', protect, updateProformaInvoice);
 router.delete('/:id', protect, deleteProformaInvoice);
 router.get('/client/:clientId', protect, getProformaInvoicesByClient);
+router.get('/quotation/:quotationId', protect, getProformaInvoicesByQuotation);
 
 export default router; 
