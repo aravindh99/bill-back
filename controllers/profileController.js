@@ -1,5 +1,35 @@
 import prisma from '../config/prismaClient.js';
 
+const truncate = (value, max = 191) => {
+  if (typeof value !== 'string') return value;
+  return value.length > max ? value.slice(0, max) : value;
+};
+
+const sanitizeProfilePayload = (payload) => {
+  const sanitized = { ...payload };
+  // Drop huge data-URL logos to avoid DB varchar(191) overflow
+  if (typeof sanitized.logo === 'string' && sanitized.logo.startsWith('data:') && sanitized.logo.length > 191) {
+    sanitized.logo = null;
+  } else {
+    sanitized.logo = truncate(sanitized.logo);
+  }
+  sanitized.companyName = truncate(sanitized.companyName);
+  sanitized.country = truncate(sanitized.country);
+  sanitized.city = truncate(sanitized.city);
+  sanitized.pinCode = truncate(sanitized.pinCode);
+  sanitized.defaultCurrency = truncate(sanitized.defaultCurrency);
+  sanitized.state = truncate(sanitized.state);
+  sanitized.address = truncate(sanitized.address);
+  sanitized.email = truncate(sanitized.email);
+  sanitized.phone = truncate(sanitized.phone);
+  sanitized.serviceTaxNo = truncate(sanitized.serviceTaxNo);
+  sanitized.website = truncate(sanitized.website);
+  sanitized.taxationType = truncate(sanitized.taxationType);
+  sanitized.contactName = truncate(sanitized.contactName);
+  sanitized.companyCode = truncate(sanitized.companyCode);
+  return sanitized;
+};
+
 export const createProfile = async (req, res) => {
   const {
     logo,
@@ -30,33 +60,40 @@ export const createProfile = async (req, res) => {
       return res.status(409).json({ message: 'Profile with this email already exists' });
     }
 
+    const sanitized = sanitizeProfilePayload({
+      logo,
+      companyName,
+      country,
+      city,
+      pinCode,
+      defaultCurrency,
+      state,
+      address,
+      email,
+      phone,
+      serviceTaxNo,
+      website,
+      taxationType,
+      contactName,
+      companyCode
+    });
+
     const profile = await prisma.profile.create({
       data: {
-        logo,
-        companyName,
-        country,
-        city,
-        pinCode,
-        defaultCurrency: defaultCurrency || 'INR',
-        state,
-        address,
-        email,
-        phone,
-        serviceTaxNo,
-        website,
-        taxationType,
-        contactName,
-        companyCode,
+        ...sanitized,
+        // Force-drop logo for demo to avoid VARCHAR(191) overflow
+        logo: null,
+        defaultCurrency: sanitized.defaultCurrency || 'INR',
         bankDetails: bankDetails ? {
           create: bankDetails.map((bank) => ({
-            bankName: bank.bankName,
-            branchName: bank.branchName,
-            adCode: bank.adCode,
-            upiId: bank.upiId,
-            accountNumber: bank.accountNumber,
-            ifscCode: bank.ifscCode,
-            swiftCode: bank.swiftCode,
-            accountHolderName: bank.accountHolderName
+            bankName: truncate(bank.bankName),
+            branchName: truncate(bank.branchName),
+            adCode: truncate(bank.adCode),
+            upiId: truncate(bank.upiId),
+            accountNumber: truncate(bank.accountNumber),
+            ifscCode: truncate(bank.ifscCode),
+            swiftCode: truncate(bank.swiftCode),
+            accountHolderName: truncate(bank.accountHolderName)
           }))
         } : undefined
       },
@@ -145,24 +182,31 @@ export const updateProfile = async (req, res) => {
       return res.status(409).json({ message: 'Email is already in use by another profile' });
     }
 
+    const sanitized = sanitizeProfilePayload({
+      logo,
+      companyName,
+      country,
+      city,
+      pinCode,
+      defaultCurrency,
+      state,
+      address,
+      email,
+      phone,
+      serviceTaxNo,
+      website,
+      taxationType,
+      contactName,
+      companyCode
+    });
+
     const profile = await prisma.profile.update({
       where: { id: profileId },
       data: {
-        logo,
-        companyName,
-        country,
-        city,
-        pinCode,
-        defaultCurrency: defaultCurrency || 'INR',
-        state,
-        address,
-        email,
-        phone,
-        serviceTaxNo,
-        website,
-        taxationType,
-        contactName,
-        companyCode
+        ...sanitized,
+        // Force-drop logo for demo
+        logo: null,
+        defaultCurrency: sanitized.defaultCurrency || 'INR'
       },
       include: {
         bankDetails: true
@@ -236,14 +280,14 @@ export const addBankDetail = async (req, res) => {
     const bankDetail = await prisma.bankDetail.create({
       data: {
         profileId,
-        bankName,
-        branchName,
-        adCode,
-        upiId,
-        accountNumber,
-        ifscCode,
-        swiftCode,
-        accountHolderName
+        bankName: truncate(bankName),
+        branchName: truncate(branchName),
+        adCode: truncate(adCode),
+        upiId: truncate(upiId),
+        accountNumber: truncate(accountNumber),
+        ifscCode: truncate(ifscCode),
+        swiftCode: truncate(swiftCode),
+        accountHolderName: truncate(accountHolderName)
       }
     });
 
@@ -271,14 +315,14 @@ export const updateBankDetail = async (req, res) => {
     const bankDetail = await prisma.bankDetail.update({
       where: { id: bankDetailId },
       data: {
-        bankName,
-        branchName,
-        adCode,
-        upiId,
-        accountNumber,
-        ifscCode,
-        swiftCode,
-        accountHolderName
+        bankName: truncate(bankName),
+        branchName: truncate(branchName),
+        adCode: truncate(adCode),
+        upiId: truncate(upiId),
+        accountNumber: truncate(accountNumber),
+        ifscCode: truncate(ifscCode),
+        swiftCode: truncate(swiftCode),
+        accountHolderName: truncate(accountHolderName)
       }
     });
 
