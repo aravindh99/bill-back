@@ -1,4 +1,4 @@
-import express from 'express';
+git import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import itemRoutes from './routes/itemRoutes.js';
@@ -35,7 +35,7 @@ const corsOptions = {
   credentials: false,
 };
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions));
+// Removed app.options('*', ...) as it's invalid with Express 5 path-to-regexp
 
 app.use(express.json({ limit: '2mb' }));
 app.get('/', (req, res) => res.send('API running'));
