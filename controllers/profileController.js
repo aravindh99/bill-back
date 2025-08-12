@@ -25,7 +25,7 @@ export const createProfile = async (req, res) => {
   }
 
   try {
-    const existingProfile = await prisma.profile.findUnique({ where: { email } });
+    const existingProfile = await prisma.profile.findFirst({ where: { email } });
     if (existingProfile) {
       return res.status(409).json({ message: 'Profile with this email already exists' });
     }
